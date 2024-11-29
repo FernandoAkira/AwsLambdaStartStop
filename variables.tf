@@ -15,3 +15,9 @@ variable "kms_for_cloudwatch" {
   description = "KMS alias use in cloudwatch"
   type = string
 }
+
+variable "region" {
+  description = "Default region AWS"
+  type = string
+  default = "us-east-1"
+}
