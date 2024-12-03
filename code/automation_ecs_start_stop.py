@@ -3,6 +3,7 @@ import json
 import os
 import time
 ecs = boto3.client('ecs')
+sns_client = boto3.client('sns')
 
 def lambda_handler(event, context):
     tag = event.get('tag')

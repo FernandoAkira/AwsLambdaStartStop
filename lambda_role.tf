@@ -10,7 +10,7 @@ data "aws_iam_policy_document" "automation-ecs-start-stop" {
       "${aws_cloudwatch_log_group.automation-ecs-start-stop.arn}:*",
     ]
   }
-    statement {
+  statement {
     sid = "PutSNS"
     actions = [
       "sns:Publish",
@@ -18,22 +18,26 @@ data "aws_iam_policy_document" "automation-ecs-start-stop" {
     resources = ["${aws_sns_topic.automation-alarm.arn}"]
   }
 
-      statement {
+  statement {
     sid = "kms"
     actions = [
-        "kms:Decrypt",
-        "kms:GenerateDataKey*",
-        "kms:DescribeKey"
+      "kms:Decrypt",
+      "kms:GenerateDataKey*",
+      "kms:DescribeKey",
+      "kms:Encrypt"
     ]
-    resources = ["${data.aws_kms_key.lambda_key.arn}"]
+    resources = ["${data.aws_kms_key.lambda_key.arn}","${data.aws_kms_key.cloudwatch_key.arn}"]
   }
-    
-    statement {
+
+  statement {
     sid = "ecsservice"
     actions = [
-                "ecs:UpdateService",
-                "ecs:DescribeServices",
-                "ecs:ListTagsForResource"
+      "ecs:UpdateService",
+      "ecs:DescribeServices",
+      "ecs:ListTagsForResource",
+      "ecs:DescribeClusters",
+      "ecs:ListTagsForResource"
+
     ]
     resources = ["arn:aws:ecs:*:${data.aws_caller_identity.current.account_id}:*"]
   }
@@ -41,10 +45,9 @@ data "aws_iam_policy_document" "automation-ecs-start-stop" {
   statement {
     sid = "ecscluster"
     actions = [
-                "ecs:DescribeClusters",
-                "ecs:ListTagsForResource"
+      "ecs:ListClusters","ecs:ListServices"
     ]
-    resources = ["arn:aws:ecs:*:${data.aws_caller_identity.current.account_id}:*"]
+    resources = ["*"]
   }
 
 
@@ -67,7 +70,7 @@ resource "aws_iam_policy" "automation-ecs-start-stop" {
 }
 
 resource "aws_iam_role" "automation-ecs-start-stop" {
-  name   = "lambda-role-automation-ecs-start-stop"
+  name = "lambda-role-automation-ecs-start-stop"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
